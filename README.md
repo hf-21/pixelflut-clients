@@ -12,9 +12,14 @@ Simply create pull requests in this repo to ...
 - contribute to the hacktoberfest 2021
 - add your own client implementation for the [pixelflut server]
 
-**PLEASE NOTE:** Put your different implementations into dedicated subfolders with the following scheme: `<lang>_<name>`
 
-Examples:
+## Contribution guidelines
+
+- Put your different implementations into dedicated subfolders with the following scheme: `<lang>_<name>`.
+- Everything which ends with `_utils` are helpers for this specific language.
+- Everything inside the root directory which starts with `_*` is ignored by git.
+
+**Examples:**
 
 - `python_utils`
 - `go_spraycan`
