@@ -18,6 +18,10 @@ Simply create pull requests in this repo to ...
 - Put your different implementations into dedicated subfolders with the following scheme: `<lang>_<name>`.
 - Everything which ends with `_utils` are helpers for this specific language.
 - Everything inside the root directory which starts with `_*` is ignored by git.
+- For variables like Host, Port, or even font files, please utilize environment variables like
+  - `PIXELFLUT_HOST`
+  - `PIXELFLUT_PORT`
+  - `PIXELFLUT_FONT`
 
 **Examples:**
 
