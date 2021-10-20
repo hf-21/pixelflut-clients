@@ -12,37 +12,41 @@ use rand::{thread_rng, Rng};
 
 fn main() {
     println!("Flooding!");
-    let host = env!("PIXELFLUT_HOST");
-    let port = env!("PIXELFLUT_PORT");
-    serverconnection(format!("{}:{}", host, port));
+    loop{
+        let host = env!("PIXELFLUT_HOST");
+        let port = env!("PIXELFLUT_PORT");
+        let server = format!("{}:{}", host, port);
+        thread::spawn(|| {
+            serverconnection(server);
+        });
+    }
+
+
 
 
 }
 
-fn serverconnection(ip: &str) {
+fn serverconnection(ip: String) {
     match TcpStream::connect(ip) {
         Ok(mut stream) => {
-            println!("Successfully connected to server in port 3333");
 
             let height = 1920;
             let width = 2048;
             let mut rng = thread_rng();
-
-            loop{
-
+            let mut owned_string: String = format!("\n");
+            for n in 0..200{
                 let x: u32 = rng.gen_range(0..height);
                 let y: u32 = rng.gen_range(0..width);
                 let add: u32 = rng.gen_range(1..30);
-
-                let color = RandomColor::new()
-                    .seed(42) // Optional
-                    .alpha(1.0) // Optional
-                    .to_rgb_array();
-                let request = format!("PX {} {} {}{}{}\n", x, y, color[0], color[1], color[2]);
-                write!(stream, "{}", request).unwrap();
+                let r: u32 = rng.gen_range(0..255);
+                let g: u32 = rng.gen_range(0..255);
+                let b: u32 = rng.gen_range(0..255);
+                let request = format!("PX {} {} {}{}{}\n", x, y, format!("{:X}", r,),format!("{:X}",g),format!("{:X}",b));
+                owned_string = [owned_string, request].join("\n");
             }
-            //loop {
-            //}
+
+            write!(stream, "{}", owned_string);
+
         }Err(e) => {
             println!("Failed to connect: {}", e);
         }
