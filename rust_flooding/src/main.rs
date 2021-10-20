@@ -12,7 +12,9 @@ use rand::{thread_rng, Rng};
 
 fn main() {
     println!("Flooding!");
-    serverconnection("192.168.100.53:8080");
+    let host = env!("PIXELFLUT_HOST");
+    let port = env!("PIXELFLUT_PORT");
+    serverconnection(format!("{}:{}", host, port));
 
 
 }
@@ -37,7 +39,7 @@ fn serverconnection(ip: &str) {
                     .alpha(1.0) // Optional
                     .to_rgb_array();
                 let request = format!("PX {} {} {}{}{}\n", x, y, color[0], color[1], color[2]);
-                write!(stream, "{}", request);
+                write!(stream, "{}", request).unwrap();
             }
             //loop {
             //}
