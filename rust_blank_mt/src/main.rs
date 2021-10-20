@@ -11,7 +11,10 @@ extern crate num_cpus;
 
 
 fn main() -> std::io::Result<()> {
-    let mut stream = TcpStream::connect("192.168.100.53:8080")?;
+    let host = env!("PIXELFLUT_HOST");
+    let port = env!("PIXELFLUT_PORT");
+
+    let mut stream = TcpStream::connect(format!("{}:{}", host, port))?;
     // stream.set_nonblocking(true);
 
     let height = 1920;
@@ -41,7 +44,6 @@ fn main() -> std::io::Result<()> {
     for (i, (tx, _)) in channels.iter().enumerate() {
         let slice = &mut requests[i*chunk_size..(i+1)*chunk_size];
         tx.send(slice.to_vec());
-        println!("{}..{}", i*chunk_size, (i+1)*(chunk_size))
     }
 
     let mut threads: Vec<JoinHandle<std::io::Result<()>>> = Vec::new();
