@@ -61,8 +61,10 @@ fn main() -> std::io::Result<()> {
 }
 
 fn consumer(rx: Receiver<Vec<String>>) -> std::io::Result<()> {
-    let mut stream = TcpStream::connect("192.168.100.53:8080")?;
+    let host = env!("PIXELFLUT_HOST");
+    let port = env!("PIXELFLUT_PORT");
 
+    let mut stream = TcpStream::connect(format!("{}:{}", host, port))?;
     let mut requests = rx.recv().unwrap();
 
     loop {
