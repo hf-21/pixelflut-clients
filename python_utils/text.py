@@ -12,7 +12,7 @@ def get_text(text: str, size: int = 10) -> Tuple[List[int], List[int]]:
 
     assert FONTFILE and os.path.isfile(FONTFILE), f'Font file "{FONTFILE}" not found!'
 
-    font = ImageFont.truetype(FONTFILE, 50)
+    font = ImageFont.truetype(FONTFILE, size)
     size = font.getsize(text)
     image = Image.new('1', size, 1)
     draw = ImageDraw.Draw(image)
