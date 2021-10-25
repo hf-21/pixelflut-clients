@@ -1,66 +1,51 @@
-use std::io::BufReader;
 use std::io::prelude::*;
 use std::net::TcpStream;
-use std::ops::Add;
 use std::sync::mpsc;
 use std::sync::mpsc::*;
 use std::thread;
 use std::thread::JoinHandle;
+use std::time;
+
 extern crate num_cpus;
 
+static HEIGHT: usize = 1920;
+static WIDTH: usize = 2048;
+static WORKERS: usize = 16;
+static CHUNK_SIZE: usize = HEIGHT / WORKERS;
 
 
 fn main() -> std::io::Result<()> {
-    let host = env!("PIXELFLUT_HOST");
-    let port = env!("PIXELFLUT_PORT");
+    let mut requests: Vec<String> = gen_requests("FF00FF".to_string());
 
-    let mut stream = TcpStream::connect(format!("{}:{}", host, port))?;
-    // stream.set_nonblocking(true);
+    let mut threads: Vec<JoinHandle<std::io::Result<()>>> = Vec::with_capacity(WORKERS);
+    let mut senders: Vec<Sender<Vec<String>>> = Vec::with_capacity(WORKERS);
 
-    let height = 1920;
-    let width = 2048;
+    for i in 0..WORKERS {
+        let slice = &requests[i * CHUNK_SIZE..(i + 1) * CHUNK_SIZE];
 
-    let channels: Vec<(Sender<Vec<String>>, Receiver<Vec<String>>)> = (0..num_cpus::get()).map(|_| mpsc::channel()).collect();
+        let (tx, rx) = mpsc::channel();
+        tx.send(slice.to_vec()).unwrap();
+        senders.push(tx);
 
-    let mut requests: Vec<String> = Vec::new();
-    requests.reserve(height);
-
-    for y in 0..height {
-        let request = (0..width)
-            .map(|x| format!("PX {} {} FFFF00\n", x, y))
-            .reduce(|acc, value| acc + value.as_str()).unwrap();
-
-
-        requests.push(request);
+        threads.push(thread::spawn(|| worker(rx)));
     }
 
-    // for request in requests.iter() {
-    //     write!(stream, "{}", request);
-    // }
+    thread::sleep(time::Duration::from_secs(2));
+    requests = gen_requests("0000FF".to_string());
 
-    let chunk_size = requests.len() / channels.len();
-    println!("requests: {}, chunk size: {}", requests.len(), chunk_size);
-
-    for (i, (tx, _)) in channels.iter().enumerate() {
-        let slice = &mut requests[i*chunk_size..(i+1)*chunk_size];
-        tx.send(slice.to_vec());
-    }
-
-    let mut threads: Vec<JoinHandle<std::io::Result<()>>> = Vec::new();
-    for (tx, mut rx) in channels {
-        threads.push(thread::spawn(|| consumer(rx)));
+    for (i, tx) in senders.iter().enumerate() {
+        let slice = &requests[i * CHUNK_SIZE..(i + 1) * CHUNK_SIZE];
+        tx.send(slice.to_vec()).unwrap();
     }
 
     for thread in threads {
-        thread.join();
+        let _ = thread.join().unwrap();
     }
-
-    println!("{} {}", width, height);
 
     Ok(())
 }
 
-fn consumer(rx: Receiver<Vec<String>>) -> std::io::Result<()> {
+fn worker(rx: Receiver<Vec<String>>) -> std::io::Result<()> {
     let host = env!("PIXELFLUT_HOST");
     let port = env!("PIXELFLUT_PORT");
 
@@ -69,11 +54,25 @@ fn consumer(rx: Receiver<Vec<String>>) -> std::io::Result<()> {
 
     loop {
         for request in requests.iter() {
-            write!(stream, "{}", request);
+            stream.write(request.as_bytes()).unwrap();
         }
+
         match rx.try_recv() {
             Ok(new_requests) => requests = new_requests,
-            Err(_) => {},
+            Err(_) => {}
         }
     }
+}
+
+fn gen_requests(color: String) -> Vec<String> {
+    let mut requests: Vec<String> = Vec::with_capacity(HEIGHT);
+
+    for y in 0..HEIGHT {
+        let request = (0..WIDTH)
+            .map(|x| format!("PX {} {} {}\n", x, y, color))
+            .reduce(|acc, value| acc + value.as_str()).unwrap();
+
+        requests.push(request);
+    }
+    requests
 }
