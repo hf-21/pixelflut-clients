@@ -3,5 +3,5 @@ _*
 
 *.pyc
 
-debug
+target/
 .idea/
