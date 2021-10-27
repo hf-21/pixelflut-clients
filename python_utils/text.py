@@ -29,4 +29,4 @@ def get_text(text: str, size: int = 10) -> Tuple[List[int], List[int]]:
             else:
                 fg_pixels.append((x, y))
 
-    return fg_pixels, bg_pixels
+    return fg_pixels, bg_pixels, size[0], size[1]
