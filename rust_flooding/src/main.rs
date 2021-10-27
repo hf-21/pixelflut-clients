@@ -34,7 +34,7 @@ fn serverconnection(ip: String) {
             let width = 2048;
             let mut rng = thread_rng();
             let mut owned_string: String = format!("\n");
-            for n in 0..200{
+            for n in 0..1000{
                 let x: u32 = rng.gen_range(0..height);
                 let y: u32 = rng.gen_range(0..width);
                 let add: u32 = rng.gen_range(1..30);
