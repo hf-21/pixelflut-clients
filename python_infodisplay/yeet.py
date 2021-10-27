@@ -20,28 +20,39 @@ HEIGHT = 1019
 
 
 def draw_text(tn):
-    host_text = f"IP   : {HOST}"
-    port_text = f"Port : {PORT}"
+    text = [
+        f"IP   : {HOST}",
+        f"Port : {PORT}",
+    ]
 
-    x_offset = WIDTH-320
-    y_offset = HEIGHT-40
+    line_spacing = 10
+    line_height = 25
+
+    _text = list()
+    for line in text:
+        _text.append(get_text(line, line_height))
+
+    text_width = max(i[2] for i in _text)
+    text_height = sum(i[3] for i in _text)
+
+    x_offset = 25  #int(WIDTH / 2 - text_width / 2)
+    y_offset = HEIGHT - text_height  #int(HEIGHT - text_height) - 50
 
     i = 0
     color = get_random_rgb()
     while True:
+        time.sleep(0.01)
         i = i + 1
 
         if not i % 100:
             i = 0
             color = get_random_rgb()
 
-        host_fg_pixels, _ = get_text(host_text, 15)
-        port_fg_pixels, _ = get_text(port_text, 15)
+        for _i, _line in enumerate(_text):
+            y_line_offset = _i * (_line[3] + line_spacing)
+            for x, y in _line[0]:
+                tn.write(f'PX {x+x_offset} {y+y_offset+y_line_offset} {color}\n'.encode())
 
-        for x, y in host_fg_pixels:
-            tn.write(f'PX {x+x_offset} {y+y_offset} {color}\n'.encode())
-        for x, y in port_fg_pixels:
-            tn.write(f'PX {x+x_offset} {y+y_offset+20} {color}\n'.encode())
 
 
 if __name__ == '__main__':
